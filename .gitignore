@@ -1,0 +1,22 @@
+# Packages
+node_modules
+
+# IDEs
+.vscode
+.idea
+
+# Compiled files
+server/**/*.js
+server/**/*.js.maps
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Optional npm cache directory
+.npm
+yarn.lock
+
+# Dotenv file
+.env

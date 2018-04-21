@@ -14,12 +14,43 @@
     "node",
     "express",
     "typescript",
-    "mongodb"
+    "rethinkdb"
   ],
   "author": "douglasbolislima@gmail.com",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/douglasbolis/vidadeturista/issues"
   },
-  "homepage": "https://github.com/douglasbolis/vidadeturista#readme"
+  "homepage": "https://github.com/douglasbolis/vidadeturista#readme",
+  "dependencies": {
+    "boom": "^7.2.0",
+    "cookie-parser": "^1.4.3",
+    "dotenv": "^5.0.1",
+    "email-validator": "^2.0.3",
+    "express": "^4.16.3",
+    "js-data": "^3.0.2",
+    "js-data-rethinkdb": "^3.0.0",
+    "jsonwebtoken": "^8.2.1",
+    "lodash": "^4.17.5",
+    "morgan": "^1.9.0",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "rethinkdbdash": "^2.3.31",
+    "shortid": "^2.2.8"
+  },
+  "devDependencies": {
+    "@types/boom": "^7.2.0",
+    "@types/cookie-parser": "^1.4.1",
+    "@types/dotenv": "^4.0.3",
+    "@types/email-validator": "^1.0.6",
+    "@types/express": "^4.11.1",
+    "@types/js-data": "^3.0.0",
+    "@types/jsonwebtoken": "^7.2.6",
+    "@types/lodash": "^4.14.107",
+    "@types/morgan": "^1.7.35",
+    "@types/passport": "^0.4.5",
+    "@types/passport-jwt": "^3.0.1",
+    "@types/shortid": "^0.0.29",
+    "eslint": "^4.19.1"
+  }
 }
