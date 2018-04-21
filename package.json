@@ -1,0 +1,25 @@
+{
+  "name": "vidadeturista",
+  "version": "0.0.1",
+  "description": "Projeto de sistema de excursões.",
+  "main": "app.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/douglasbolis/vidadeturista.git"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "typescript",
+    "mongodb"
+  ],
+  "author": "douglasbolislima@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/douglasbolis/vidadeturista/issues"
+  },
+  "homepage": "https://github.com/douglasbolis/vidadeturista#readme"
+}
