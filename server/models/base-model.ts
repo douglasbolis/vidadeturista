@@ -18,7 +18,7 @@ export abstract class BaseModel implements IBaseModel {
   constructor ( obj?: IBaseModel ) {
     if ( obj ) {
       this.id = obj.id ? obj.id : ServiceLib.generateId()
-      this.active = ( obj.active === null || obj.active === undefined ) ? true : obj.active
+      this.active = ( _.isNull( obj.active ) || _.isUndefined( obj.active ) ) ? true : obj.active
     } else {
       this.id = ServiceLib.generateId()
       this.active = true
