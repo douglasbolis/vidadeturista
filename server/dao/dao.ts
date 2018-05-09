@@ -168,7 +168,7 @@ export class DAO< T extends IBaseModel > implements IDAO< T > {
   public update ( id: string, user: IBaseUser, obj: T ): Promise< T > {
     return this.collection.update( id, obj )
       .then( ( record: JSData.Record ) => record.toJSON( this.opts ) as T )
-      .catch(( reject: JSData.SchemaValidationError ) => {
+      .catch( ( reject: JSData.SchemaValidationError ) => {
         throw new APIError( 'Erro de entrada dos dados.', 400, reject )
       } )
   }
@@ -185,27 +185,47 @@ export class DAO< T extends IBaseModel > implements IDAO< T > {
     return this.collection.destroy( id )
       .then( ( response ) => true )
   }
+  
+  /**
+   * Realiza a paginação dos registros.
+   * 
+   * @param {*} search Objeto com o filtro específico.
+   * @param {IBaseUser} user Usuário executando a operação.
+   * @param {number} [page] Número da página.
+   * @param {number} [limit] Quantidade de registros por página.
+   * @param {Array< string >} [order] Ordenação dos registros.
+   * @param {*} [options] Objeto de joins dos registros.
+   * @returns {Promise< IResultSearch< T > >} Registros paginados.
+   * @memberof DAO
+   */
+  paginatedQuery ( search: any, user: IBaseUser, page?: number, limit?: number, order?: Array< string >, options?: any ): Promise< IResultSearch< T > > {
+    let _page: number = search.page || page || 1
+    let _limit: number = search.limit || limit || 10
+    // A ordenação dos registros pode ser das seguintes formas:
+    // - Ascendente:
+    // · Somente o nome do campo: 'firstname'
+    // · Array com alguns campos: [ 'firstname' ]
+    // - Ascendente ou Descendente:
+    // · Array com alguns campos: [ [ 'firstname', 'ASC' ], [ 'lastname', 'DESC' ] ]
+    let _order: string | Array< any > = search.order || order || 'createdAt'
+    let params = {
+      ...search, ...{
+        orderBy: _order,
+        offset: _limit * ( _page - 1 ),
+        limit: _limit
+      }
+    }
 
-  paginatedQuery ( search: Object, user: IBaseUser, page?: number, limit?: number, order?: Array<string>, options?: any ): Promise< IResultSearch< T > > {
-    let _page: number = page || 1
-    let _limit: number = limit || 10
-    let _order: string[] = []
-    let params = Object.assign( {}, search, {
-      orderBy: _order,
-      offset: _limit * ( _page - 1 ),
-      limit: _limit
-    } )
-
-    return this.collection.findAll( search )
-      .then(( countResult ) => {
-        return this.collection.findAll( params, options || this.opts )
-          .then(( results: JSData.Record[] ) => {
-            return {
-              page: _page,
-              total: countResult.length,
-              result: results.map( d => d.toJSON( options || this.opts ) )
-            } as IResultSearch<T>
-          } )
+    return Promise.all( [
+      this.collection.findAll( search ),
+      this.collection.findAll( params, options || this.opts )
+    ] )
+      .then( ( [ countResult, results ] ) => {
+        return {
+          page: _page,
+          total: countResult.length,
+          result: results.map( ( d: JSData.Record ) => d.toJSON( options || this.opts ) )
+        }
       } )
   }
 
