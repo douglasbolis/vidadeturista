@@ -1,7 +1,6 @@
-import { IBaseModel } from '../interfaces/ibase-model'
-import { IBaseUser } from '../interfaces/ibase-user'
-import { IDAO, IResultSearch } from '../interfaces'
+import { IBaseModel, IBaseUser, IDAO, IResultSearch } from '../interfaces'
 import { APIError } from '../services'
+import { AppConfig } from '../config'
 import * as JSData from 'js-data'
 import * as _ from 'lodash'
 
@@ -33,10 +32,11 @@ import * as _ from 'lodash'
  * @template T Tipo generalizado.
  */
 export class DAO< T extends IBaseModel > implements IDAO< T > {
-  public collection: JSData.Mapper
-  public schema: JSData.Schema
-  public collectionName: string
-  public opts: any
+  collection: JSData.Mapper
+  schema: JSData.Schema
+  collectionName: string
+  appConfig: AppConfig
+  opts: any
   constructor ( store: JSData.DataStore, collectionName: string, schema: any = null, relations: any = null, joins: string[] = [] ) {
     if ( !store ) {
       throw Error( 'store is not defined' )

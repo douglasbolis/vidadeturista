@@ -1,9 +1,10 @@
 import { ServiceLib } from '../services/service-lib'
+import { moment } from '../services/moment'
 import { IBaseModel } from '../interfaces'
 import * as _ from 'lodash'
 
 /**
- * Model para para as demais classes criadoras.
+ * Model base para para as demais classes criadoras.
  * 
  * @export
  * @abstract
@@ -16,14 +17,14 @@ export abstract class BaseModel implements IBaseModel {
   createdAt?: string
   updatedAt?: string
   constructor ( obj?: IBaseModel ) {
-    if ( obj ) {
+    if ( !_.isEmpty( obj ) ) {
       this.id = obj.id ? obj.id : ServiceLib.generateId()
-      this.active = ( _.isNull( obj.active ) || _.isUndefined( obj.active ) ) ? true : obj.active
+      this.active = _.isBoolean( obj.active ) ? obj.active : true
     } else {
       this.id = ServiceLib.generateId()
       this.active = true
     }
-    this.createdAt = obj.createdAt || new Date().toISOString()
+    this.createdAt = obj.createdAt || moment().toISOString()
     this.updatedAt = obj.updatedAt || null
   }
 }

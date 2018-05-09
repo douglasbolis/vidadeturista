@@ -2,12 +2,20 @@ import { IBaseModel } from '.'
 
 export interface IBaseUser extends IBaseModel {
   /**
-   * Nome do usuário.
+   * Primeiro nome do usuário.
    * 
    * @type {string}
    * @memberof IBaseUser
    */
-  name: string
+  firstname: string
+
+  /**
+   * Último nome do usuário.
+   * 
+   * @type {string}
+   * @memberof IBaseUser
+   */
+  lastname: string
   
   /**
    * Alias da empresa so usuário.
@@ -15,15 +23,7 @@ export interface IBaseUser extends IBaseModel {
    * @type {string}
    * @memberof IBaseUser
    */
-  companyAlias: string
-  
-  /**
-   * Email do usuário.
-   * 
-   * @type {string}
-   * @memberof IBaseUser
-   */
-  email: string
+  companyAlias?: string
   
   /**
    * Username do usuário.
@@ -34,19 +34,18 @@ export interface IBaseUser extends IBaseModel {
   username: string
   
   /**
+   * Email do usuário.
+   * 
+   * @type {string}
+   * @memberof IBaseUser
+   */
+  email: string
+  
+  /**
    * Senha do usuário.
    * 
    * @type {string}
    * @memberof IBaseUser
    */
   password: string
-  
-  /**
-   * Flag para verificação de administrador.
-   * Se _true_ o usuário é administrador do sistema.
-   * 
-   * @type {boolean}
-   * @memberof IBaseUser
-   */
-  isAdmin: boolean
 }
