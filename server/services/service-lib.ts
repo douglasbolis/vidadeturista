@@ -1,8 +1,12 @@
-import { AppConfig } from '../config/app-config'
-import { APIError } from '../services/api-error'
+import { ETypePerson } from '../interfaces'
+import { APIError } from '../services'
+import { AppConfig } from '../config'
 import * as EmailValidator from 'email-validator'
 import * as shortid from 'shortid'
 import * as crypto from 'crypto'
+const cpfCnpj = require( 'cpf_cnpj' )
+const cpf = cpfCnpj.CPF
+const cnpj = cpfCnpj.CNPJ
 
 /**
  * shortid config chars
@@ -22,13 +26,6 @@ shortid.characters( '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
  */
 export class ServiceLib {
   config: AppConfig
-  /**
-   * Creates an instance of ServiceLib.
-   * Essa instancia depende somente da configuracao setada na aplicacao que é encapsulado no appConfig.
-   * @param {AppConfig} config
-   *
-   * @memberof ServiceLib
-   */
   constructor ( config: AppConfig ) {
     this.config = config
   }
@@ -39,7 +36,7 @@ export class ServiceLib {
    * @returns {string} Id gerada.
    * @memberof ServiceLib
    */
-  static generateId () {
+  public static generateId () {
     return shortid.generate()
   }
 
@@ -51,7 +48,7 @@ export class ServiceLib {
    * @returns {boolean} Booleano se o email é valido.
    * @memberof ServiceLib
    */
-  static emailValidator ( email: string ): boolean {
+  public static emailValidator ( email: string ): boolean {
     return EmailValidator.validate( email )
   }
 
@@ -63,7 +60,7 @@ export class ServiceLib {
    * @returns {Promise<string>} Hash da senha.
    * @memberof ServiceLib
    */
-  static hashPassword ( password: string ): string {
+  public static hashPassword ( password: string ): string {
     return crypto.createHash( 'sha1' ).update( password ).digest( 'hex' )
   }
 
@@ -77,8 +74,36 @@ export class ServiceLib {
    * @returns {boolean} retorna verdadeiro se bater
    * @memberof ServiceLib
    */
-  static comparePassword ( password: string, encryptedPassword: string ): boolean {
+  public static comparePassword ( password: string, encryptedPassword: string ): boolean {
     return crypto.createHash( 'sha1' ).update( password ).digest( 'hex' ) === encryptedPassword
+  }
+
+  /**
+   * Valida o documento do usuário.
+   * Para cpf ou cnpj de acordo com o tipo de pessoa.
+   *
+   * @static
+   * @param {string} numDocFed
+   * @returns {boolean}
+   *
+   * @memberof UserDAO
+   */
+  public static cpfCnpjValidator ( numDocFed: string, typePerson: ETypePerson ): boolean {
+    return typePerson === ETypePerson.INDIVIDUAL ? cpf.isValid( numDocFed ) : cnpj.isValid( numDocFed )
+  }
+
+  /**
+   * Retorna o erro encontrado via chamada do serviço APIError.
+   *
+   * @static
+   * @param {string} message Mensagem de erro.
+   * @param {number} statusCode Status do erro.
+   * @param {Object} [objectResponse={}] Objeto de retorno.
+   * @returns {Services.APIError}
+   * @memberof ServiceLib
+   */
+  public static callMessageError ( message: string, statusCode: number, objectResponse: Object = {} ): any {
+    throw new APIError( message, statusCode, objectResponse )
   }
 
   /**

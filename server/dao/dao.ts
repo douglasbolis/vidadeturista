@@ -3,6 +3,7 @@ import { APIError } from '../services'
 import { AppConfig } from '../config'
 import * as JSData from 'js-data'
 import * as _ from 'lodash'
+import { WSAEPFNOSUPPORT } from 'constants';
 
 /**
  * Foi projetado a classe para ser operada como classe generica para ser aplicavel em qualquer classe de persistencia, de forma montar as seguintes operacoes
@@ -37,7 +38,7 @@ export class DAO< T extends IBaseModel > implements IDAO< T > {
   collectionName: string
   appConfig: AppConfig
   opts: any
-  constructor ( store: JSData.DataStore, collectionName: string, schema: any = null, relations: any = null, joins: string[] = [] ) {
+  constructor ( store: JSData.DataStore, appConfig: AppConfig, collectionName: string, schema: any = null, relations: any = null, joins: string[] = [] ) {
     if ( !store ) {
       throw Error( 'store is not defined' )
     }
@@ -60,6 +61,7 @@ export class DAO< T extends IBaseModel > implements IDAO< T > {
         type: 'string'
       }
     }
+    this.appConfig = appConfig
     this.collectionName = collectionName
 
     if ( schema ) {

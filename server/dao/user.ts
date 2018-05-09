@@ -1,6 +1,7 @@
+import { ETypeUser, IBaseUser, IUser } from '../interfaces'
 import { ServiceLib } from '../services'
-import { IUser } from '../interfaces'
 import { AppConfig } from '../config'
+import { User } from '../models'
 import { DAO } from '.'
 import * as JSData from 'js-data'
 import * as _ from 'lodash'
@@ -56,9 +57,8 @@ export class UserDAO extends DAO< IUser > {
     }
     const relations: any = null
     const joins: Array< string > = []
-    super( store, collectionName, schema, relations, joins )
-    this.appConfig = appConfig
-    this.serviceLib = new Services.ServiceLib( appConfig )
+    super( store, appConfig, collectionName, schema, relations, joins )
+    this.serviceLib = new ServiceLib( appConfig )
   }
 
   /**
@@ -69,7 +69,7 @@ export class UserDAO extends DAO< IUser > {
    *
    * @memberOf UserDAO
    */
-  public parseModel ( val: any ): IUser {
+  public parseModel ( val: IUser ): IUser {
     return new User( val )
   }
 
@@ -77,37 +77,23 @@ export class UserDAO extends DAO< IUser > {
    * Busca os dados do usuário.
    *
    * @param {string} id Id do usuário.
-   * @param {Interfaces.IBaseUser} userP Usuário executando a operação.
+   * @param {IBaseUser} userP Usuário executando a operação.
    * @returns {Promise< IUser >}
    * @memberof UserDAO
    */
-  public find ( id: string, userP: Interfaces.IBaseUser ): Promise< IUser > {
-    let userData: IUser
-
-    return super.find( userP.id, userP )
-      .then( ( _userData: IUser ) => {
-        userData = _userData
-        return Promise.all( [
-          super.find( id, userP ),
-          this.buildingBasicDAO.find( this.getBuildingId( userData ), userData )
-        ] )
-      } )
-      .then( ( [ user, building ] ) => {
-        // Se o usuário logado não for AFAZER.
-        if ( userData.tpUser !== ETypeUser.ADMIN ) {
-          // Se o usuário que está sendo buscado for patrocinável.
-          if ( _.indexOf( usersSponsored, user.tpUser ) >= 0 ) {
-            // Se não for patrocinado e ele não for do mesmo empreendimento que o usuário logado está.
-            if ( !user.sponsored && ( building ? user.buildingId !== building.id : true ) ) {
-              throw new Services.APIError( `Não foi possível buscar os dados do ${ this.getTpUser( user.tpUser ) }.`, 403 )
-            }
-          } else
-          // Se não for os dados do usuário logado e ele não possui acesso de admin no empreendimento.
-          if ( userData.id !== user.id && !ServiceBuilding.userAdminToBuilding( userData, building ) ) {
-            throw new Services.APIError( `Usuário não encontrado.`, 404 )
+  public find ( id: string, userP: IBaseUser ): Promise< IUser > {
+    return Promise.all( [
+      super.find( userP.id, userP ),
+      super.find( id, userP )
+    ] )
+      .then( ( [ userData, user ] ) => {
+        if ( userData.type !== ETypeUser.ADMIN && userData.id !== user.id ) {
+          if ( user.type === ETypeUser.ADMIN || user.type === ETypeUser.EMPLOYEE ||
+            ( user.type === ETypeUser.DEFAULT && userData.type !== ETypeUser.EMPLOYEE )
+          ) {
+            return ServiceLib.callMessageError( 'Não foi possível buscar o usuário.', 403 )
           }
         }
-        // Else final(todos os casos).
         return user
       } )
   }
@@ -116,23 +102,23 @@ export class UserDAO extends DAO< IUser > {
    * Busca todos os usuários.
    *
    * @param {Object} [query={}] Filtro da busca.
-   * @param {Interfaces.IBaseUser} userP Usuário executando a operação.
+   * @param {IBaseUser} userP Usuário executando a operação.
    * @param {boolean} [isWithJob] Se estiver definido com `true` o filtro de usuários está sendo feito pelo job.
    * @returns {Promise< Array< IUser > >}
    * @memberof UserDAO
    */
-  public findAll ( query: Object = {}, userP: Interfaces.IBaseUser, isWithJob?: boolean ): Promise< Array< IUser > > {
+  public findAll ( query: Object = {}, userP: IBaseUser, isWithJob?: boolean ): Promise< Array< IUser > > {
     let userData: IUser
 
     if ( isWithJob ) {
-      return super.findAll( query, userP )
+      return super.findAll( query, user )
     }
 
-    return super.find( userP.id, userP )
+    return super.find( user.id, user )
       .then( ( _userData: IUser ) => {
         userData = _userData
         return Promise.all( [
-          super.findAll( query, userP ),
+          super.findAll( query, user ),
           this.buildingBasicDAO.find( this.getBuildingId( userData ), userData )
         ] )
       } )
@@ -158,18 +144,18 @@ export class UserDAO extends DAO< IUser > {
    * Método create para cadastrar os dados do usuário validando os dados específico para cada tipo
    *
    * @param {IUser} obj
-   * @param {Interfaces.IBaseUser} baseUser
+   * @param {IBaseUser} userP
    * @param {boolean} [isWithJob] Se estiver definido com `true` a inserção do usuário está sendo feito pelo job.
    * @returns {Promise< IUser >}
    *
    * @memberOf UserDAO
    */
-  public create ( obj: IUser, baseUser: Interfaces.IBaseUser, isWithJob?: boolean ): Promise< IUser > {
+  public create ( obj: IUser, userP: IBaseUser, isWithJob?: boolean ): Promise< IUser > {
     let userData: IUser
     let user: IUser = new User( obj )
 
     if ( isWithJob ) {
-      return super.create( obj, baseUser )
+      return super.create( obj, userP )
     }
 
     let validationError: boolean = false
@@ -194,13 +180,13 @@ export class UserDAO extends DAO< IUser > {
     const callError = ( msg: string, statusCode: number, objError: any = {} ) => {
       throw new Services.APIError( msg, statusCode, objError )
     }
-    return super.find( baseUser.id, baseUser )
+    return super.find( userP.id, userP )
       .then( ( _userData: IUser ) => {
         userData = _userData
         return Promise.all( [
-          super.findAll( filterDoc, baseUser ),
-          super.findAll( filterEmail, baseUser ),
-          super.findAll( filterAlternativeEmail, baseUser ),
+          super.findAll( filterDoc, userP ),
+          super.findAll( filterEmail, userP ),
+          super.findAll( filterAlternativeEmail, userP ),
           this.buildingBasicDAO.find( this.getBuildingId( userData ), userData )
         ] )
       } )
@@ -245,7 +231,7 @@ export class UserDAO extends DAO< IUser > {
           obj.password = Services.ServiceLib.hashPassword( 'asd123' )
         }
 
-        return super.create( obj, baseUser )
+        return super.create( obj, userP )
       } )
       .then( ( user: IUser ) => this.sendNotificationMail( user, true ) )
   }
@@ -254,13 +240,13 @@ export class UserDAO extends DAO< IUser > {
    * Atualiza os dados do usuário
    *
    * @param {string} id
-   * @param {Interfaces.IBaseUser} user
+   * @param {IBaseUser} userP
    * @param {IUser} obj
    * @returns {Promise<IUser>}
    *
    * @memberOf UserDAO
    */
-  public update ( id: string, userP: Interfaces.IBaseUser, obj: IUser ): Promise < IUser > {
+  public update ( id: string, userP: IBaseUser, obj: IUser ): Promise < IUser > {
     let userData: IUser
     let dataValidate: Array< JSData.SchemaValidationError >
     const filterEmail: any = {
@@ -283,13 +269,13 @@ export class UserDAO extends DAO< IUser > {
       throw new Services.APIError( msg, statusCode, objError )
     }
 
-    return this.find( userP.id, userP )
+    return this.find( user.id, user )
       .then( ( _userData: IUser ) => {
         userData = _userData
         return Promise.all( [
-          this.find( id, userP ),
-          super.findAll( filterEmail, userP ),
-          super.findAll( filterAlternativeEmail, userP ),
+          this.find( id, user ),
+          super.findAll( filterEmail, user ),
+          super.findAll( filterAlternativeEmail, user ),
           this.buildingBasicDAO.find( this.getBuildingId( userData ), userData )
         ] )
       } )
@@ -354,7 +340,7 @@ export class UserDAO extends DAO< IUser > {
         if ( userData.tpUser !== ETypeUser.ADMIN ) {
           delete data.sponsored
         }
-        return super.update( id, userP, data )
+        return super.update( id, user, data )
       } )
       .then ( ( user: IUser ) => this.sendNotificationMail( user ) )
   }
@@ -363,19 +349,19 @@ export class UserDAO extends DAO< IUser > {
    * Remove o usuário pela id.
    *
    * @param {string} id Id do usuário.
-   * @param {Interfaces.IBaseUser} user Dados do usuário executando a operação.
+   * @param {IBaseUser} userP Dados do usuário executando a operação.
    * @returns {Promise< boolean >}
    * @memberof EvidenceDAO
    */
-  public delete ( id: string, user: Interfaces.IBaseUser ): Promise< boolean > {
+  public delete ( id: string, userP: IBaseUser ): Promise< boolean > {
     // TODO verificar se algum usuário poderá ser removido do sistema.
     // TODO e com esse usuário removido se isso impactará nos relacionamentos que ele estiver envolvido.
     throw new Services.APIError( 'Não foi possível remover o usuário.', 403 )
   }
 
   public paginatedQuery (
-    search: any, userP: Interfaces.IBaseUser, page?: number, limit?: number, order?: Array<string>, options?: any
-  ): Promise< Interfaces.IResultSearch< IUser > > {
+    search: any, userP: IBaseUser, page?: number, limit?: number, order?: Array<string>, options?: any
+  ): Promise< IResultSearch< IUser > > {
     let _page: number = search.page || page || 1
     let _limit: number = search.limit || limit || 10
     let _order: string[] = search.orderBy || []
@@ -385,7 +371,7 @@ export class UserDAO extends DAO< IUser > {
       ...{ orderBy: _order }
     }
 
-    return this.findAll( params, userP )
+    return this.findAll( params, user )
       .then( ( users: Array< IUser > ) => {
         return {
           page: _page,
