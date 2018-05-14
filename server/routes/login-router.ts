@@ -1,14 +1,16 @@
-import { AppConfig } from '../config/app-config'
-import { Request, Response, Router, NextFunction } from 'express'
-import { jwtGenerator } from '../auth/passport'
+import { INextFunction, IRequest, IResponse } from '../interfaces'
+import { jwtGenerator } from '../auth'
+import { AppConfig } from '../config'
+import { BaseRouter } from '.'
+import { Router } from 'express'
 import * as JSData from 'js-data'
 
-export class LoginRouter {
+export class LoginRouter extends BaseRouter {
   store: JSData.DataStore
-  router: Router
   appConfig: AppConfig
-
-  constructor (store: JSData.DataStore, appConfig: AppConfig) {
+  router: Router
+  constructor ( store: JSData.DataStore, appConfig: AppConfig ) {
+    super()
     this.store = store
     this.router = Router()
     this.appConfig = appConfig
@@ -16,8 +18,8 @@ export class LoginRouter {
   }
 
   public routers () {
-    this.router.post('/', (req: Request, res: Response, next: NextFunction): Promise<Response> =>
-      jwtGenerator(this.store, this.appConfig)(req, res, next))
+    this.router.post( '/', (req: IRequest, res: IResponse, next?: INextFunction ): Promise< IResponse > =>
+      this.respond( jwtGenerator( this.store, this.appConfig )( req, res, next ), res ) )
   }
 
   public getRouter (): Router {

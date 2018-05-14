@@ -1,19 +1,24 @@
-import { Request, Response, Router, NextFunction } from 'express'
+import { IRequest, IResponse, INextFunction } from '../interfaces'
 import { SignupController } from '../controllers'
 import { BaseRouter } from './base-router'
-import { IBaseUser } from '../interfaces'
 import { AppConfig } from '../config'
-import { DAO } from '../models'
-import * as JSData from 'js-data'
+import { Router } from 'express'
 import * as nodemailer from 'nodemailer'
+import * as JSData from 'js-data'
 
+/**
+ * Class for signup router.
+ * 
+ * @export
+ * @class SignupRouter
+ * @extends {BaseRouter}
+ */
 export class SignupRouter extends BaseRouter {
   controller: SignupController
-  store: JSData.DataStore
   router: Router
-  constructor ( appConfig: AppConfig, userDAO: DAO< IBaseUser >, transporter?: nodemailer.Transporter ) {
+  constructor ( store: JSData.DataStore, appConfig: AppConfig, transporter?: nodemailer.Transporter ) {
     super()
-    this.controller = new SignupController( appConfig, userDAO, transporter )
+    this.controller = new SignupController( store, appConfig, transporter )
     this.router = Router()
     this.routers()
   }
@@ -22,19 +27,19 @@ export class SignupRouter extends BaseRouter {
     /**
      * Envia link por email para completar cadastro.
      */
-    this.router.post( '/' , ( req: Request, res: Response, next: NextFunction ) =>
+    this.router.post( '/' , ( req: IRequest, res: IResponse, next: INextFunction ) =>
       this.respond( this.controller.sendMail( req, res, next ), res ) )
 
     /**
      * Recupera os dados do usuário do token.
      */
-    this.router.get( '/:token', ( req: Request, res: Response, next: NextFunction ) =>
+    this.router.get( '/:token', ( req: IRequest, res: IResponse, next: INextFunction ) =>
       this.respond( this.controller.validaToken( req, res, next ), res ) )
 
     /**
      * Confirma o cadastro e insere o restante dos dados do usuário.
      */
-    this.router.post( '/:token', ( req: Request, res: Response, next: NextFunction ) =>
+    this.router.post( '/:token', ( req: IRequest, res: IResponse, next: INextFunction ) =>
       this.respond( this.controller.registerPassword( req, res, next ), res ) )
   }
 

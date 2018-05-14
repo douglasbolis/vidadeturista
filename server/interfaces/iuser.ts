@@ -1,22 +1,13 @@
-import { IBaseModel, IBaseUser } from '.'
+import { IBaseUser } from '.'
 
 /**
  * Interface para usuário com as descrições de seus atributos.
  *
  * @export
  * @interface IUser
- * @extends {IBaseModel}
  * @extends {IAddress}
  */
-export interface IUser extends IBaseModel, IBaseUser, IAddress {
-  /**
-   * Tipo do usuário.
-   *
-   * @type {ETypeUser}
-   * @memberOf IUser
-   */
-  type: ETypeUser
-
+export interface IUser extends IBaseUser, IAddress {
   /**
    * Tipo de pessoa do usuário.
    * 
@@ -165,30 +156,6 @@ export interface IPhone {
    * @memberof IPhone
    */
   phone: string
-}
-
-/**
- * Enum para o tipo de usuário.
- *
- * @export
- * @enum {number}
- */
-export enum ETypeUser {
-  /**
-   * Admin.
-   */
-  ADMIN,
-  
-  /**
-   * Funcionário.
-   */
-  EMPLOYEE,
-
-  /**
-   * Usuário padrão.
-   * Usuário, cliente, passageiro...
-   */
-  DEFAULT
 }
 
 export enum ETypePerson {

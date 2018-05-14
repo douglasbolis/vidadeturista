@@ -1,4 +1,4 @@
-import { ETypeUser, IBaseUser, IUser } from '../interfaces'
+import { ETypeUser, IResultSearch, IUser } from '../interfaces'
 import { ServiceLib } from '../services'
 import { AppConfig } from '../config'
 import { User } from '../models'
@@ -77,19 +77,16 @@ export class UserDAO extends DAO< IUser > {
    * Busca os dados do usuário.
    *
    * @param {string} id Id do usuário.
-   * @param {IBaseUser} userP Usuário executando a operação.
+   * @param {IUser} authUser Usuário executando a operação.
    * @returns {Promise< IUser >}
    * @memberof UserDAO
    */
-  public find ( id: string, userP: IBaseUser ): Promise< IUser > {
-    return Promise.all( [
-      super.find( userP.id, userP ),
-      super.find( id, userP )
-    ] )
-      .then( ( [ userData, user ] ) => {
-        if ( userData.type !== ETypeUser.ADMIN && userData.id !== user.id ) {
+  public find ( id: string, authUser: IUser ): Promise< IUser > {
+    return super.find( id, authUser )
+      .then( ( user: IUser ) => {
+        if ( authUser.type !== ETypeUser.ADMIN && authUser.id !== user.id ) {
           if ( user.type === ETypeUser.ADMIN || user.type === ETypeUser.EMPLOYEE ||
-            ( user.type === ETypeUser.DEFAULT && userData.type !== ETypeUser.EMPLOYEE )
+            ( user.type === ETypeUser.DEFAULT && authUser.type === ETypeUser.DEFAULT )
           ) {
             return ServiceLib.callMessageError( 'Não foi possível buscar o usuário.', 403 )
           }
@@ -102,353 +99,165 @@ export class UserDAO extends DAO< IUser > {
    * Busca todos os usuários.
    *
    * @param {Object} [query={}] Filtro da busca.
-   * @param {IBaseUser} userP Usuário executando a operação.
-   * @param {boolean} [isWithJob] Se estiver definido com `true` o filtro de usuários está sendo feito pelo job.
+   * @param {IUser} authUser Usuário executando a operação.
    * @returns {Promise< Array< IUser > >}
    * @memberof UserDAO
    */
-  public findAll ( query: Object = {}, userP: IBaseUser, isWithJob?: boolean ): Promise< Array< IUser > > {
-    let userData: IUser
-
-    if ( isWithJob ) {
-      return super.findAll( query, user )
-    }
-
-    return super.find( user.id, user )
-      .then( ( _userData: IUser ) => {
-        userData = _userData
-        return Promise.all( [
-          super.findAll( query, user ),
-          this.buildingBasicDAO.find( this.getBuildingId( userData ), userData )
-        ] )
-      } )
-      .then( ( [ users, building ] ) => {
-        // Se o usuário logado não AFAZER.
-        if ( userData.tpUser !== ETypeUser.ADMIN ) {
-          // Remove os patrocináveis que não forem do mesmo empreendimento que o usuário logado.
-          _.remove( users, ( user: IUser ) => {
-            return _.indexOf( usersSponsored, user.tpUser ) >= 0 && !user.sponsored && ( building ? user.buildingId !== building.id : true )
-          } )
-          // Se o usuário logado não possuir acesso de admin no empreendimento.
-          if ( !ServiceBuilding.userAdminToBuilding( userData, building ) ) {
-            // Redefine o array de usuários somente os dados do usuário logado.
-            users = [ _.find( users, { id: userData.id } ) ]
-          }
+  public findAll ( query: Object = {}, authUser: IUser ): Promise< Array< IUser > > {
+    return super.findAll( query, authUser )
+      .then( ( users: Array< IUser > ) => {
+        if ( authUser.type !== ETypeUser.ADMIN ) {
+          _.remove( users, user => user.type !== ETypeUser.DEFAULT )
         }
-        // Else final(todos os casos).
         return users
       } )
   }
 
   /**
-   * Método create para cadastrar os dados do usuário validando os dados específico para cada tipo
+   * Cria e insere um usuário.
    *
-   * @param {IUser} obj
-   * @param {IBaseUser} userP
-   * @param {boolean} [isWithJob] Se estiver definido com `true` a inserção do usuário está sendo feito pelo job.
+   * @param {IUser} obj Dados do novo usuário.
+   * @param {IUser} authUser Usuário executando a operação.
    * @returns {Promise< IUser >}
    *
    * @memberOf UserDAO
    */
-  public create ( obj: IUser, userP: IBaseUser, isWithJob?: boolean ): Promise< IUser > {
-    let userData: IUser
-    let user: IUser = new User( obj )
+  public create ( obj: IUser, authUser: IUser ): Promise< IUser > {
+    const data: IUser = new User( obj )
+    const dataValidate: Array< JSData.SchemaValidationError > = this.schema.validate( data )
 
-    if ( isWithJob ) {
-      return super.create( obj, userP )
+    // Filtro para buscar os usuários com os mesmos email e documentos.
+    const filterUsers: any = {
+      where: {
+        numDocFed: { '|===': data.numDocFed },
+        email: { '|===': data.email }
+      }
     }
 
-    let validationError: boolean = false
-    let dataValidate: Array< JSData.SchemaValidationError > = this.schema.validate( user )
-    let filterDoc: any = {
-      where: {
-        numDocFed: { '===': obj.numDocFed }
-      }
-    }
-    let filterEmail: any = {
-      where: {
-        email: { '|===': obj.email },
-        alternativeEmail: { '|===': obj.email }
-      }
-    }
-    let filterAlternativeEmail: any = {
-      where: {
-        email: { '|===': obj.alternativeEmail || '' },
-        alternativeEmail: { '|===': obj.alternativeEmail || '' }
-      }
-    }
-    const callError = ( msg: string, statusCode: number, objError: any = {} ) => {
-      throw new Services.APIError( msg, statusCode, objError )
-    }
-    return super.find( userP.id, userP )
-      .then( ( _userData: IUser ) => {
-        userData = _userData
-        return Promise.all( [
-          super.findAll( filterDoc, userP ),
-          super.findAll( filterEmail, userP ),
-          super.findAll( filterAlternativeEmail, userP ),
-          this.buildingBasicDAO.find( this.getBuildingId( userData ), userData )
-        ] )
+    return super.findAll( filterUsers, authUser )
+      .then( ( users: Array< IUser >) => {
+        if ( authUser.type !== ETypeUser.ADMIN ) {
+          return ServiceLib.callMessageError( 'Sem permissão para inserir o usuário.', 403 )
+        } else
+        if ( dataValidate ) {
+          return ServiceLib.callMessageError( 'Erro de entrada nos dados do usuário.', 400, dataValidate )
+        } else
+        if ( users.length ) {
+          return ServiceLib.callMessageError( 'O documento e/ou email já pertence a outro usuário.', 400 )
+        } else
+        if ( !ServiceLib.cpfCnpjValidator( data.numDocFed, data.typePerson ) ) {
+          return ServiceLib.callMessageError( 'O documento oficial do usuário não é válido.', 400 )
+        } else
+        if ( !ServiceLib.emailValidator( data.email ) ) {
+          return ServiceLib.callMessageError( 'O email do usuário não é válido.', 400 )
+        }
+
+        // TODO remover a linha a abaixo quando as telas de cadastro de senha e forgot estiverem funcionando.
+        obj.password = ServiceLib.hashPassword( 'asd123' )
+
+        return super.create( obj, authUser )
       } )
-      .then( ( [ userDoc, userEmail, userAlternativeEmail, building ] ) => {
-        if ( userData.tpUser !== ETypeUser.ADMIN && !ServiceBuilding.userAdminToBuilding( userData, building ) ) {
-          return callError( 'Não foi possível inserir o usuário.', 403 )
-        } else if ( dataValidate ) {
-          throw new Services.APIError( 'Erro de entrada.', 400, dataValidate )
-        } else if ( userDoc.length ) {
-          return callError( 'O cpf/cnpj pertence a outro usuário', 400 )
-        } else if ( userEmail.length ) {
-          return callError( 'O email pertence a outro usuário', 400 )
-        } else if ( user.alternativeEmail && userAlternativeEmail.length ) {
-          return callError( 'O email alternativo pertence a outro usuário', 400 )
-        } else if ( !serviceLib.cpfCnpjValidator( user.numDocFed ) ) {
-          return callError( 'O cpf/cnpj não é válido', 400 )
-        } else if ( !Services.ServiceLib.emailValidator( user.email ) ) {
-          return callError( 'O email não é válido', 400 )
-        } else if ( user.alternativeEmail && !Services.ServiceLib.emailValidator( user.alternativeEmail ) ) {
-          return callError( 'O email alternativo não é válido', 400 )
-        }
-        if ( _.indexOf( usersCompany, user.tpUser ) >= 0 ) {
-          validationError = !user.fantasyName
-        } else if ( user.tpUser === ETypeUser.DESIGNER ) {
-          validationError = !user.creaCau || !user.formation
-        }
-        if ( validationError ) {
-          return callError( 'Erro de entrada', 400, this.schemaUser.validate( user ) )
-        }
-        if ( _.indexOf( usersSponsored, user.tpUser ) >= 0 ) {
-          if ( userData.tpUser !== ETypeUser.ADMIN ) {
-            obj.buildingId = user.activeBuildingId
-            obj.sponsored = false
-          } else {
-            obj.buildingId = null
-            obj.sponsored = true
-          }
-        }
-
-        // TODO remover if a abaixo quando as telas de cadastro de senha e forgot estiverem funcionando.
-        if ( _.indexOf( usersAccess, user.tpUser ) >= 0 ) {
-          obj.password = Services.ServiceLib.hashPassword( 'asd123' )
-        }
-
-        return super.create( obj, userP )
-      } )
-      .then( ( user: IUser ) => this.sendNotificationMail( user, true ) )
   }
-
+  
   /**
-   * Atualiza os dados do usuário
-   *
-   * @param {string} id
-   * @param {IBaseUser} userP
-   * @param {IUser} obj
-   * @returns {Promise<IUser>}
-   *
-   * @memberOf UserDAO
+   * Atualiza os dados do usuário.
+   * 
+   * @param {string} id Id do usuário.
+   * @param {IUser} authUser Usuério executando a operação.
+   * @param {IUser} obj Objeto com os dados a serem atualizados.
+   * @returns {Promise< IUser >} Dados do usuário atualizados.
+   * @memberof UserDAO
    */
-  public update ( id: string, userP: IBaseUser, obj: IUser ): Promise < IUser > {
-    let userData: IUser
-    let dataValidate: Array< JSData.SchemaValidationError >
-    const filterEmail: any = {
+  public update ( id: string, authUser: IUser, obj: IUser ): Promise< IUser > {
+    const fieldsNotUp: Array< string > = [ 'id', 'active', 'createdAt', 'numDocFed', 'email', 'type', 'typePerson', 'password' ]
+    const data: IUser = this.fieldsUpValidator( obj, fieldsNotUp )
+
+    // Filtros para verificar a alteração do email do usuário.
+    const filterUserEmail: any = {
       where: {
+        id: { 'notIn': [ id ] },
         email: { '|===': obj.email || '' },
-        alternativeEmail: { '|===': obj.email || '' }
+        numDocFed: { '|===': obj.numDocFed || '' }
       }
-    }
-    const filterAlternativeEmail: any = {
-      where: {
-        email: { '|===': obj.alternativeEmail || '' },
-        alternativeEmail: { '|===': obj.alternativeEmail || '' }
-      }
-    }
-    const fieldsObj: Array< string > = Object.keys( obj )
-    const fieldsNotUp: Array< string > = [ 'id', 'active', 'createdAt', 'numDocFed', 'email', 'alternativeEmail',
-      'tpUser', 'buildingId', 'lastBuildingsId', 'password' ]
-    const data: IUser = serviceLib.fieldsUpValidator( obj, fieldsObj, fieldsNotUp )
-    const callError = ( msg: string, statusCode: number, objError: any = {} ) => {
-      throw new Services.APIError( msg, statusCode, objError )
     }
 
-    return this.find( user.id, user )
-      .then( ( _userData: IUser ) => {
-        userData = _userData
-        return Promise.all( [
-          this.find( id, user ),
-          super.findAll( filterEmail, user ),
-          super.findAll( filterAlternativeEmail, user ),
-          this.buildingBasicDAO.find( this.getBuildingId( userData ), userData )
-        ] )
-      } )
-      .then( ( [ user, userEmail, userAlternativeEmail, building ] ) => {
-        if ( userData.tpUser !== ETypeUser.ADMIN ) {
-          // Edição está sendo feita pelo próprio usuário logado.
-          if ( userData.id === user.id ) {
-            delete data.buildingsId
-          } else
-          // Se a edição não está sendo feita por admin.
-          // Ou se é admin em um empreendimento mas o usuário não pertence ao empreendimento.
-          if (
-            !ServiceBuilding.userAdminToBuilding( userData, building ) ||
-            (
-              ServiceBuilding.userAdminToBuilding( userData, building ) &&
-              !ServiceBuilding.userBelongsToBuilding( user, building ) &&
-              !_.difference( data.buildingsId, user.buildingsId ).length &&
-              _.indexOf( data.buildingsId, building.id ) < 0
-            )
-          ) {
-            return callError( 'Não foi possível atualizar o usuário.', 403 )
-          }
+    return Promise.all( [
+      this.find( id, authUser ),
+      super.findAll( filterUserEmail, authUser )
+    ] )
+      .then( ( [ user, users ] ) => {
+        if ( authUser.type !== ETypeUser.ADMIN && authUser.id === user.id ) {
+          return ServiceLib.callMessageError( 'Não foi possível atualizar o usuário.', 403 )
         }
-        // Salvando as ids dos empreendimentos que o usuário está associado.
-        user.lastBuildingsId = user.buildingsId
         // Sobreescrevendo dados do usuário para validação.
-        Object.assign( user, data )
+        user = { ...user, ...data }
         // Validando os dados do usuário após a sobreescrita.
-        dataValidate = this.schema.validate( user )
+        const dataValidate: Array< JSData.SchemaValidationError > = this.schema.validate( user )
         // Verificando se houve alguma inconsistência com os dados sobreescritos.
         if ( dataValidate ) {
-          return callError( 'Erro de entrada.', 400, dataValidate )
+          return ServiceLib.callMessageError( 'Erro de entrada na atualização do usuário.', 400, dataValidate )
         }
         // Verificando se o email será atualizado e se ele já pertence a outro usuário (exceto a ele mesmo)
-        if ( obj.email ) {
-          if ( _.differenceBy( userEmail, [ user ], 'id' ).length ) {
-            return callError( 'O email já pertence a outro usuário', 400 )
+        if ( _.isString( obj.email ) ) {
+          if ( users.length ) {
+            return ServiceLib.callMessageError( 'O novo email já pertence a outro usuário.', 400 )
+          } else
+          if ( !ServiceLib.emailValidator( obj.email ) ) {
+            return ServiceLib.callMessageError( 'O novo email do usuário não é válido.', 400 )
           }
           data.email = obj.email
         }
-        // Verificando se o email alternativo será atualizado e se ele já pertence a outro usuário (exceto a ele mesmo)
-        if ( obj.alternativeEmail ) {
-          if ( _.differenceBy( userAlternativeEmail, [ user ], 'id' ).length ) {
-            return callError( 'O email alternativo já pertence a outro usuário', 400 )
-          }
-          data.alternativeEmail = obj.alternativeEmail
-        }
-        if ( _.indexOf( [ ETypeUser.SYNDIC, ETypeUser.SUBSIDY, ETypeUser.DEFAULT ], user.tpUser ) >= 0 ) {
-          // if ( _.difference( data.buildingsId, user.lastBuildingsId ).length ) {
-          //   data.lastBuildingsId = user.lastBuildingsId
-          // } else {
-          //   data.lastBuildingsId = user.lastBuildingsId
-          // }
-          data.lastBuildingsId = user.lastBuildingsId
-        } else {
-          delete data.lastBuildingsId
-          delete data.buildingsId
-        }
-        if ( _.indexOf( [ ETypeUser.EQUIPMENTSUPPLIER, ETypeUser.MATERIALSUPPLIER, ETypeUser.SERVICEPROVIDER ], user.tpUser ) === -1 ) {
-          delete data.tags
-        }
-        if ( userData.tpUser !== ETypeUser.ADMIN ) {
-          delete data.sponsored
-        }
+
         return super.update( id, user, data )
       } )
-      .then ( ( user: IUser ) => this.sendNotificationMail( user ) )
   }
 
   /**
    * Remove o usuário pela id.
    *
    * @param {string} id Id do usuário.
-   * @param {IBaseUser} userP Dados do usuário executando a operação.
-   * @returns {Promise< boolean >}
+   * @param {IUser} authUser Usuário executando a operação.
+   * @returns {Promise< boolean >} Booleano indicando o sucesso da operação.
    * @memberof EvidenceDAO
    */
-  public delete ( id: string, userP: IBaseUser ): Promise< boolean > {
-    // TODO verificar se algum usuário poderá ser removido do sistema.
-    // TODO e com esse usuário removido se isso impactará nos relacionamentos que ele estiver envolvido.
-    throw new Services.APIError( 'Não foi possível remover o usuário.', 403 )
+  public delete ( id: string, authUser: IUser ): Promise< boolean > {
+    if ( authUser.type !== ETypeUser.ADMIN ) {
+      return ServiceLib.callMessageError( 'Não foi possível remover o usuário.', 403 )
+    }
+    return super.delete( id, authUser )
   }
 
-  public paginatedQuery (
-    search: any, userP: IBaseUser, page?: number, limit?: number, order?: Array<string>, options?: any
-  ): Promise< IResultSearch< IUser > > {
-    let _page: number = search.page || page || 1
-    let _limit: number = search.limit || limit || 10
-    let _order: string[] = search.orderBy || []
+  /**
+   * Busca paginada dos usuários.
+   * 
+   * @param {*} search Objeto de filtro.
+   * @param {IUser} authUser Usuário executando a operação.
+   * @param {number} [page] Número da página.
+   * @param {number} [limit] Quantidade de registros na página.
+   * @param {Array< string >} [order] Ordenação dos registros.
+   * @param {*} [options] Objeto com os joins dos registros.
+   * @returns {Promise< IResultSearch< IUser > >} Usuários paginados.
+   * @memberof UserDAO
+   */
+  public paginatedQuery ( search: any, authUser: IUser, page?: number, limit?: number, order?: Array< string >, options?: any ): Promise< IResultSearch< IUser > > {
+    const _page: number = search.page || page || 1
+    const _limit: number = search.limit || limit || 10
+    const _order: string[] = search.orderBy || []
 
-    let params = {
+    const params = {
       ...search,
       ...{ orderBy: _order }
     }
 
-    return this.findAll( params, user )
+    const pagination = ( users: Array< IUser > ) => _.slice( users, _limit * ( _page - 1 ), _limit * _page )
+
+    return this.findAll( params, authUser )
       .then( ( users: Array< IUser > ) => {
         return {
           page: _page,
           total: users.length,
-          result: _.slice( users, _limit * ( _page - 1 ), _limit * _page )
+          result: pagination( users )
         }
       } )
-  }
-
-  /**
-   * Envia uma notificação por email ao usuário informando-o a associação com o empreendimento.
-   *
-   * @private
-   * @param {IUser} user
-   * @param {boolean} [isCreate=false]
-   * @returns {Promise < IUser >}
-   * @memberof UserDAO
-   */
-  private sendNotificationMail ( user: IUser, isCreate: boolean = false ): Promise < IUser > {
-    // Verificando se o usuário possui algum empreendimento associado
-    // E se ele é do tipo default, síndico ou subsindico e já possui uma senha cadastrada
-    let tpUsers: Array< ETypeUser > = [ ETypeUser.SYNDIC, ETypeUser.SUBSIDY, ETypeUser.DEFAULT ]
-    let obj: any = {
-      user
-    }
-    if ( _.indexOf( tpUsers, user.tpUser ) >= 0 && _.difference( user.buildingsId, user.lastBuildingsId ).length ) {
-      let urlL: string = process.env.LOGIN_URL
-      // Verifica se já possui senha registrada
-      // TODO descomentar linhas a abaixo e voltar ao que era antes quando as telas de cadastro de senha e forgot estiverem funcionando.
-      /* if ( !user.password || ( user.password && !user.password.length ) ) {
-        let token: string = this.serviceLib.generateToken( user.email )
-        urlL = url.resolve( this.appConfig.getSignUpUrl(), token )
-        this.sendMail.sendGenericEmail( obj, 'Empreendimento associado', urlL, 'association-with-confirmation' ) */
-      if ( isCreate ) {
-        this.sendMail.sendGenericEmail( obj, 'Empreendimento associado', urlL, 'association-with-confirmation' )
-      } else {
-        this.sendMail.sendGenericEmail( obj, 'Empreendimento associado', urlL, 'association' )
-      }
-    }
-    return Promise.resolve( user )
-  }
-
-  /**
-   * Retorna o tipo do usuário.
-   *
-   * @private
-   * @param {ETypeUser} tpUser Tipo do usuário.
-   * @returns {string}
-   * @memberof UserDAO
-   */
-  private getTpUser ( tpUser: ETypeUser ): string {
-    if ( tpUser === ETypeUser.EQUIPMENTSUPPLIER ) {
-      return 'Fornecedor de equipamentos'
-    } else if ( tpUser === ETypeUser.SERVICEPROVIDER ) {
-      return 'Prestador de serviços'
-    } else if ( tpUser === ETypeUser.MATERIALSUPPLIER ) {
-      return 'Fornecedor de materiais'
-    }
-
-    return null
-  }
-
-  /**
-   * Pega a id do empreendimento dos dados do usuário.
-   *
-   * @private
-   * @param {IUser} user Dados do usuário.
-   * @returns {string}
-   * @memberof UserDAO
-   */
-  private getBuildingId ( user: IUser ): string {
-    if ( user.activeBuildingId ) {
-      return user.activeBuildingId
-    } else if ( user.buildingsId && user.buildingsId.length ) {
-      return _.head( user.buildingsId )
-    } else {
-      return ''
-    }
   }
 }

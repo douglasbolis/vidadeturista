@@ -1,16 +1,17 @@
-import { Router, Response, NextFunction } from 'express'
+import { INextFunction, IRequest, IResponse } from '../interfaces'
 import { ForgotController } from '../controllers'
-import { UserDAO } from '../models/user'
 import { AppConfig } from '../config'
+import { Router } from 'express'
 import { BaseRouter } from '.'
 import * as nodemailer from 'nodemailer'
+import * as JSData from 'js-data'
 
 export class ForgotRouter extends BaseRouter {
   controller: ForgotController
   router: Router
-  constructor ( appConfig: AppConfig, userDAO: UserDAO, transport?: nodemailer.Transporter ) {
+  constructor ( store: JSData.DataStore, appConfig: AppConfig, transport?: nodemailer.Transporter ) {
     super()
-    this.controller = new ForgotController( appConfig, userDAO, transport )
+    this.controller = new ForgotController( store, appConfig, transport )
     this.router = Router()
     this.routers()
   }
@@ -19,19 +20,19 @@ export class ForgotRouter extends BaseRouter {
     /**
      * Envia link por email para resetar a senha.
      */
-    this.router.post( '/' , ( req: any, res: Response, next: NextFunction ) =>
+    this.router.post( '/' , ( req: IRequest, res: IResponse, next: INextFunction ) =>
       this.respond( this.controller.sendMail( req, res, next ), res ) )
 
     /**
      * Recupera os dados do usuário do token.
      */
-    this.router.get( '/:token', ( req: any, res: Response, next: NextFunction ) =>
+    this.router.get( '/:token', ( req: IRequest, res: IResponse, next: INextFunction ) =>
       this.respond( this.controller.validaToken( req, res, next ), res ) )
 
     /**
      * Reseta a senha do usuário.
      */
-    this.router.post( '/:token', ( req: any, res: Response, next: NextFunction ) =>
+    this.router.post( '/:token', ( req: IRequest, res: IResponse, next: INextFunction ) =>
       this.respond( this.controller.resetPassword( req, res, next ), res ) )
   }
 

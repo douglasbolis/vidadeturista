@@ -48,4 +48,36 @@ export interface IBaseUser extends IBaseModel {
    * @memberof IBaseUser
    */
   password: string
+
+  /**
+   * Tipo do usuário.
+   *
+   * @type {ETypeUser}
+   * @memberOf IUser
+   */
+  type: ETypeUser
+}
+
+/**
+ * Enum para o tipo de usuário.
+ *
+ * @export
+ * @enum {number}
+ */
+export enum ETypeUser {
+  /**
+   * Admin.
+   */
+  ADMIN,
+  
+  /**
+   * Funcionário.
+   */
+  EMPLOYEE,
+
+  /**
+   * Usuário padrão.
+   * Usuário, cliente, passageiro...
+   */
+  DEFAULT
 }

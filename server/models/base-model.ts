@@ -12,10 +12,10 @@ import * as _ from 'lodash'
  * @implements {IBaseModel}
  */
 export abstract class BaseModel implements IBaseModel {
-  id?: string
-  active?: boolean
-  createdAt?: string
-  updatedAt?: string
+  id: string
+  active: boolean
+  createdAt: string
+  updatedAt: string
   constructor ( obj?: IBaseModel ) {
     if ( !_.isEmpty( obj ) ) {
       this.id = obj.id ? obj.id : ServiceLib.generateId()
@@ -24,7 +24,7 @@ export abstract class BaseModel implements IBaseModel {
       this.id = ServiceLib.generateId()
       this.active = true
     }
-    this.createdAt = obj.createdAt || moment().toISOString()
-    this.updatedAt = obj.updatedAt || null
+    this.createdAt = !_.isEmpty( obj ) && !_.isEmpty( obj.createdAt ) ? obj.createdAt : moment().toISOString()
+    this.updatedAt = !_.isEmpty( obj ) && !_.isEmpty( obj.updatedAt ) ? obj.updatedAt : moment().toISOString()
   }
 }

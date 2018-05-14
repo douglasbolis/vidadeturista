@@ -1,5 +1,3 @@
-import { IBaseModel } from './ibase-model'
-
 /**
  * Interface para as buscas paginadas.
  * 
@@ -7,15 +5,7 @@ import { IBaseModel } from './ibase-model'
  * @interface IResultSearch
  * @template T
  */
-export interface IResultSearch< T extends IBaseModel > {
-  /**
-   * Número da página.
-   * 
-   * @type {number}
-   * @memberof IResultSearch
-   */
-  page: number,
-  
+export interface IResultSearch< T > {  
   /**
    * Número total de registros do tipo T no sistema.
    * 

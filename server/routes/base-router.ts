@@ -1,18 +1,18 @@
-import { Response, Router } from 'express'
 import { APIError } from '../services/api-error'
-import { IBaseModel } from '../interfaces'
-import { IPersistController } from '../interfaces'
+import { IDAOController } from '../interfaces'
+import { IResponse } from '../interfaces'
+import { Router } from 'express'
 import * as JSData from 'js-data'
 
 export class BaseRouter {
-  respond ( t: Promise< any >, res: Response ): Promise< Response > {
+  respond ( t: Promise< any >, res: IResponse ): Promise< IResponse > {
     return t
       .then( ( u ) => res.json( u ) )
       .catch( ( err: APIError ) => res.status( err.statusCode >= 100 && err.statusCode < 600 ? err.statusCode : 500 ).json( { error: err.error, objectResponse: err.objectResponse } ) )
   }
 }
 
-export class PersistRouter< M extends IBaseModel, C extends IPersistController< M > > extends BaseRouter {
+export class PersistRouter< M, C extends IDAOController< M > > extends BaseRouter {
   controller: C
   router: Router
 

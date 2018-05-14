@@ -11,7 +11,7 @@ export interface IBaseModel {
    * @type {string}
    * @memberof IBaseModel
    */
-  id?: string
+  id: string
   
   /**
    * Flag de ativo.
@@ -20,7 +20,7 @@ export interface IBaseModel {
    * @type {boolean}
    * @memberof IBaseModel
    */
-  active?: boolean
+  active: boolean
   
   /**
    * Data de criação do model.
@@ -28,7 +28,7 @@ export interface IBaseModel {
    * @type {string}
    * @memberof IBaseModel
    */
-  createdAt?: string
+  createdAt: string
   
   /**
    * Data de atualização dos dados do model.
@@ -36,5 +36,5 @@ export interface IBaseModel {
    * @type {string}
    * @memberof IBaseModel
    */
-  updatedAt?: string
+  updatedAt: string
 }

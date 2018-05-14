@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/douglasbolis/vidadeturista#readme",
   "dependencies": {
+    "bluebird": "^3.5.1",
     "boom": "^7.2.0",
     "bson": "^2.0.6",
     "cookie-parser": "^1.4.3",
@@ -45,6 +46,7 @@
     "shortid": "^2.2.8"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.20",
     "@types/boom": "^7.2.0",
     "@types/bson": "^1.0.8",
     "@types/cookie-parser": "^1.4.1",
