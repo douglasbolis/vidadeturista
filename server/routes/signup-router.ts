@@ -3,7 +3,6 @@ import { SignupController } from '../controllers'
 import { BaseRouter } from './base-router'
 import { AppConfig } from '../config'
 import { Router } from 'express'
-import * as nodemailer from 'nodemailer'
 import * as JSData from 'js-data'
 
 /**
@@ -16,9 +15,9 @@ import * as JSData from 'js-data'
 export class SignupRouter extends BaseRouter {
   controller: SignupController
   router: Router
-  constructor ( store: JSData.DataStore, appConfig: AppConfig, transporter?: nodemailer.Transporter ) {
+  constructor ( store: JSData.DataStore, appConfig: AppConfig ) {
     super()
-    this.controller = new SignupController( store, appConfig, transporter )
+    this.controller = new SignupController( store, appConfig )
     this.router = Router()
     this.routers()
   }

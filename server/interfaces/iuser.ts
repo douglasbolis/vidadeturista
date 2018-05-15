@@ -9,6 +9,14 @@ import { IBaseUser } from '.'
  */
 export interface IUser extends IBaseUser, IAddress {
   /**
+   * Tipo do usuário.
+   *
+   * @type {ETypeUser}
+   * @memberOf IUser
+   */
+  type: ETypeUser
+
+  /**
    * Tipo de pessoa do usuário.
    * 
    * @type {ETypePerson}
@@ -158,6 +166,30 @@ export interface IPhone {
   phone: string
 }
 
+/**
+ * Enum para o tipo de usuário.
+ *
+ * @export
+ * @enum {number}
+ */
+export enum ETypeUser {
+  /**
+   * Admin.
+   */
+  ADMIN,
+  
+  /**
+   * Funcionário.
+   */
+  EMPLOYEE,
+
+  /**
+   * Usuário padrão.
+   * Usuário, cliente, passageiro...
+   */
+  DEFAULT
+}
+
 export enum ETypePerson {
   /**
    * Pessoa física.
@@ -180,4 +212,15 @@ export enum ETypePhone {
    * Telefone celular.
    */
   MOBILE
+}
+
+export enum ETypeMail {
+  /**
+   * Signup.
+   */
+  confirmation,
+  /**
+   * Esqueceu senha.
+   */
+  forgot
 }

@@ -2,7 +2,6 @@ import { INextFunction, IRequest, IResponse } from '../interfaces'
 import { ServiceLib } from '../services'
 import { AppConfig } from '../config'
 import { ForgotDAO } from '../dao'
-import * as nodemailer from 'nodemailer'
 import * as JSData from 'js-data'
 
 /**
@@ -14,9 +13,9 @@ import * as JSData from 'js-data'
 export class ForgotController {
   forgot: ForgotDAO
   appConfig: AppConfig
-  constructor ( store: JSData.DataStore, appConfig: AppConfig, transporter?: nodemailer.Transporter ) {
+  constructor ( store: JSData.DataStore, appConfig: AppConfig ) {
     this.appConfig = appConfig
-    this.forgot = new ForgotDAO( store, appConfig, transporter )
+    this.forgot = new ForgotDAO( store, appConfig )
   }
 
   /**

@@ -2,7 +2,6 @@ import { INextFunction, IRequest, IResponse } from '../interfaces'
 import { ServiceLib } from '../services'
 import { AppConfig } from '../config'
 import { SignupDAO } from '../dao'
-import * as nodemailer from 'nodemailer'
 import * as JSData from 'js-data'
 
 /**
@@ -15,9 +14,9 @@ export class SignupController {
   signupDAO: SignupDAO
   config: AppConfig
 
-  constructor ( store: JSData.DataStore, appConfig: AppConfig, transporter?: nodemailer.Transporter ) {
+  constructor ( store: JSData.DataStore, appConfig: AppConfig ) {
     this.config = appConfig
-    this.signupDAO = new SignupDAO( store, appConfig, transporter )
+    this.signupDAO = new SignupDAO( store, appConfig )
   }
   /**
    * Envia um email para criar o primeiro login

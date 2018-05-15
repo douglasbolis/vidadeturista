@@ -3,15 +3,14 @@ import { ForgotController } from '../controllers'
 import { AppConfig } from '../config'
 import { Router } from 'express'
 import { BaseRouter } from '.'
-import * as nodemailer from 'nodemailer'
 import * as JSData from 'js-data'
 
 export class ForgotRouter extends BaseRouter {
   controller: ForgotController
   router: Router
-  constructor ( store: JSData.DataStore, appConfig: AppConfig, transport?: nodemailer.Transporter ) {
+  constructor ( store: JSData.DataStore, appConfig: AppConfig ) {
     super()
-    this.controller = new ForgotController( store, appConfig, transport )
+    this.controller = new ForgotController( store, appConfig )
     this.router = Router()
     this.routers()
   }

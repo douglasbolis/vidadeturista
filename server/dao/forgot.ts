@@ -1,7 +1,6 @@
 import { moment, SendMail, ServiceLib } from '../services'
 import { ISignupForgot, IUser } from '../interfaces'
 import { AppConfig } from '../config'
-import * as nodemailer from 'nodemailer'
 import * as JSData from 'js-data'
 import * as _ from 'lodash'
 import * as url from 'url'
@@ -17,8 +16,8 @@ export class ForgotDAO {
   private serviceLib: ServiceLib
   private appConfig: AppConfig
   private sendMail: SendMail
-  constructor ( store: JSData.DataStore, appConfig: AppConfig, transporter?: nodemailer.Transporter ) {
-    this.sendMail = new SendMail( appConfig.mailConfig, transporter )
+  constructor ( store: JSData.DataStore, appConfig: AppConfig ) {
+    this.sendMail = new SendMail( appConfig.mailConfig )
     this.serviceLib = new ServiceLib( appConfig )
     this.appConfig = appConfig
     this.store = store
@@ -115,10 +114,8 @@ export class ForgotDAO {
         if ( obj.password.length < 6 ) {
           return ServiceLib.callMessageError( 'A nova senha deve conter no mínimo 6 caracteres.', 400 )
         }
-        return Promise.all( [ user, ServiceLib.hashPassword( obj.password ) ] )
-      } )
-      .then( ( [ user, password ] ) => {
-        user.password = password
+
+        user.password = ServiceLib.hashPassword( obj.password )
         return this.store.update( this.appConfig.getUsersTable(), user.id, user )
       } )
       .then( () => true )

@@ -3,7 +3,6 @@ import { ISignupForgot, IUser } from '../interfaces'
 import { AppConfig } from '../config'
 import { UserDAO } from '../dao'
 import{ User } from '../models'
-import * as nodemailer from 'nodemailer'
 import * as JSData from 'js-data'
 import * as url from 'url'
 import* as _ from 'lodash'
@@ -20,8 +19,8 @@ export class SignupDAO {
   private appConfig: AppConfig
   private sendMail: SendMail
   private userDAO: UserDAO
-  constructor ( store: JSData.DataStore, appConfig: AppConfig, transporter?: nodemailer.Transporter ) {
-    this.sendMail = new SendMail( appConfig.mailConfig, transporter )
+  constructor ( store: JSData.DataStore, appConfig: AppConfig ) {
+    this.sendMail = new SendMail( appConfig.mailConfig )
     this.userDAO = new UserDAO( store, appConfig )
     this.serviceLib = new ServiceLib( appConfig )
     this.appConfig = appConfig
