@@ -50,7 +50,8 @@
     "nodemailer-smtp-transport": "^2.7.4",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
-    "shortid": "^2.2.8"
+    "shortid": "^2.2.8",
+    "typescript": "^2.8.3"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.20",
@@ -78,6 +79,7 @@
     "@types/passport": "^0.4.5",
     "@types/passport-jwt": "^3.0.1",
     "@types/shortid": "^0.0.29",
+    "@types/typescript": "^2.0.0",
     "eslint": "^4.19.1",
     "tslint": "^5.10.0"
   }
