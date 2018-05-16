@@ -6,8 +6,11 @@ node_modules
 .idea
 
 # Compiled files
-server/**/*.js
-server/**/*.js.maps
+**/*.js
+**/*.js.map
+
+# Not ignore gulpfile
+!gulpfile.js
 
 # Logs
 logs

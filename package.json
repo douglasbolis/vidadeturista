@@ -4,7 +4,10 @@
   "description": "Projeto de sistema de excursões.",
   "main": "app.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/bin/www",
+    "commitmsg": "validate-commit-msg",
+    "gulp": "gulp"
   },
   "repository": {
     "type": "git",
@@ -80,7 +83,36 @@
     "@types/passport-jwt": "^3.0.1",
     "@types/shortid": "^0.0.29",
     "@types/typescript": "^2.0.0",
+    "conventional-changelog": "^1.1.24",
+    "cz-conventional-changelog": "^2.1.0",
     "eslint": "^4.19.1",
-    "tslint": "^5.10.0"
+    "husky": "^0.14.3",
+    "tslint": "^5.10.0",
+    "validate-commit-msg": "^2.14.0"
+  },
+  "config": {
+    "validate-commit-msg": {
+      "types": [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "chore",
+        "revert",
+        "ci",
+        "build"
+      ],
+      "warnOnFail": false,
+      "maxSubjectLength": 100,
+      "subjectPattern": ".+",
+      "subjectPatternErrorMsg": "subject does not match subject pattern!",
+      "helpMessage": ""
+    },
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
