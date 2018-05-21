@@ -1,7 +1,7 @@
 import { INextFunction, IRequest, IResponse } from '../interfaces'
+import { BaseRouter } from './base-router'
 import { jwtGenerator } from '../auth'
 import { AppConfig } from '../config'
-import { BaseRouter } from '.'
 import { Router } from 'express'
 import * as JSData from 'js-data'
 

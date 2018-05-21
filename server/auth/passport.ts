@@ -9,7 +9,7 @@ import * as _ from 'lodash'
 export const passportJwt = ( store: JSData.DataStore, passport: any, appConfig: AppConfig ): any => {
   const params = {
     secretOrKey: appConfig.getJwtConfig().secret,
-    jwtFromRequest: ExtractJwt.fromAuthHeader()
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
   }
 
   passport.use( new Strategy( params, ( token: any, done: Function ) => {

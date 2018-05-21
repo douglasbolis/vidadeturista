@@ -1,8 +1,8 @@
 import { INextFunction, IRequest, IResponse } from '../interfaces'
 import { ForgotController } from '../controllers'
+import { BaseRouter } from './base-router'
 import { AppConfig } from '../config'
 import { Router } from 'express'
-import { BaseRouter } from '.'
 import * as JSData from 'js-data'
 
 export class ForgotRouter extends BaseRouter {

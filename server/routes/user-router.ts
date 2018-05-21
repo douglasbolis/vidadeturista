@@ -1,7 +1,7 @@
 import { UserController } from '../controllers'
+import { PersistRouter } from './base-router'
 import { AppConfig } from '../config'
 import { IUser } from '../interfaces'
-import { PersistRouter } from '.'
 import * as JSData from 'js-data'
 
 export class UserRouter extends PersistRouter< IUser, UserController > {

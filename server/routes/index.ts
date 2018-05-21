@@ -7,8 +7,6 @@ import { AppConfig } from '../config'
 import * as JSData from 'js-data'
 import * as Auth from '../auth'
 
-export { BaseRouter, PersistRouter } from './base-router'
-
 export namespace main {
   export const callRoutes = ( app: Application, store: JSData.DataStore, passport: any, appConfig: AppConfig ): Application => {
     // Endpoints de acesso
@@ -17,7 +15,8 @@ export namespace main {
     app.use( '/api/v1/login', new LoginRouter( store, appConfig ).getRouter() )
 
     // Endpoints internos - Authentication JWT
-    app.use( '/api/v1/users', Auth.authenticate( passport, appConfig ), new UserRouter( store, appConfig ).getRouter() )
+    // app.use( '/api/v1/users', Auth.authenticate( passport, appConfig ), new UserRouter( store, appConfig ).getRouter() )
+    app.use( '/api/v1/users', new UserRouter( store, appConfig ).getRouter() )
 
     return app
   }

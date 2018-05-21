@@ -69,7 +69,7 @@ export class DAO< T > implements IDAO< T > {
       if ( relations ) {
         opts.relations = relations
       }
-      this.collection = store.defineMapper( collectionName, opts )
+      this.collection = store.defineMapper( collectionName, { ...opts, ...{ collection: collectionName } } )
     }
 
     this.opts = {
