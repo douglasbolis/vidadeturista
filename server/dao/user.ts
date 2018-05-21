@@ -40,7 +40,8 @@ export class UserDAO extends DAO< IUser > {
               phone: { type: 'string' }
             },
             required: [ 'type', 'phone' ]
-          }
+          },
+          minItems: 1
         },
         photo: { type: 'string' },
         dateBirth: { type: 'string' },

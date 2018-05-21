@@ -5,10 +5,9 @@
  * @returns Valor da variável de ambiente.
  */
 export const getEnv = ( key: string ) => {
-  if ( !process.env[ key ] ) {
-    console.warn( `a variavel ${ key } não foi definida` )
-    return null
-  } else {
-    return process.env[ key ]
+  const envValue: string = process.env[ key ] || null
+  if ( !envValue ) {
+    console.warn( `A variável de ambiente [${ key }] não foi definida.` )
   }
+  return envValue
 }

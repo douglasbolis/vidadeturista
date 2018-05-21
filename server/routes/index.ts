@@ -4,7 +4,6 @@ import { LoginRouter } from './login-router'
 import { UserRouter } from './user-router'
 import { Application } from 'express'
 import { AppConfig } from '../config'
-import { UserDAO } from '../dao'
 import * as JSData from 'js-data'
 import * as Auth from '../auth'
 
@@ -12,8 +11,6 @@ export { BaseRouter, PersistRouter } from './base-router'
 
 export namespace main {
   export const callRoutes = ( app: Application, store: JSData.DataStore, passport: any, appConfig: AppConfig ): Application => {
-    const userDAO: UserDAO = new UserDAO( store, appConfig )
-
     // Endpoints de acesso
     app.use( '/api/v1/signup', new SignupRouter( store, appConfig ).getRouter() )
     app.use( '/api/v1/forgot', new ForgotRouter( store, appConfig ).getRouter() )

@@ -1,4 +1,4 @@
-import Boom from 'boom';
+import * as Boom from 'boom'
 
 /**
  * Class APIError para a padronização das respostas com erros.
@@ -46,9 +46,8 @@ export class APIError extends Error {
    * @memberof APIError
    */
   private showError () {
-    let err = this
-    console.error( `API ERROR CODE: ${ err.statusCode }` )
-    console.error( `API ERROR MESSAGE: ${ err.message }` )
-    console.error( `API ERROR STACK: ${ err.stack }` )
+    console.error( `API ERROR CODE: ${ this.statusCode }` )
+    console.error( `API ERROR MESSAGE: ${ this.message }` )
+    console.error( `API ERROR STACK: ${ this.stack }` )
   }
 }

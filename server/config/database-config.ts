@@ -14,9 +14,9 @@ export class DatabaseConfig {
   private _database: string
   public constructor () {
     // Definindo conexão com o banco de dados.
-    let port: string = getEnv( 'SERVER_RETHINKDB_PORT' ) || '27017'
-    let host: string = getEnv( 'SERVER_RETHINKDB_HOST' ) || 'localhost'
-    let db: string = getEnv( 'SERVER_RETHINKDB_DB' ) || 'vidadeturista'
+    let port: string = getEnv( 'SERVER_MONGODB_PORT' ) || '27017'
+    let host: string = getEnv( 'SERVER_MONGODB_HOST' ) || 'localhost'
+    let db: string = getEnv( 'SERVER_MONGODB_DB' ) || 'vidadeturista'
     let opts: IBaseMongoDBAdapter = {
       uri: `mongodb://${ host }:${ port }/${ db }`
     } 
