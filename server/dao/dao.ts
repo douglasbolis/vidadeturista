@@ -89,7 +89,6 @@ export class DAO< T > implements IDAO< T > {
    *
    * @memberOf DAO
    */
-
   public parseModel ( obj: T ): T {
     throw new Error( 'not implemented' )
   }
