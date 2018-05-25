@@ -1,49 +1,27 @@
 import { APIError } from '../services/api-error'
-import { IDAOController } from '../interfaces'
 import { IResponse } from '../interfaces'
-import { Router } from 'express'
-import * as JSData from 'js-data'
 
+/**
+ * Class base router.
+ * 
+ * @export
+ * @class BaseRouter
+ */
 export class BaseRouter {
-  respond ( t: Promise< any >, res: IResponse ): Promise< IResponse > {
+  /**
+   * Método de padronização das respostas das requisições REST.
+   * 
+   * @param {Promise< any >} t
+   * @param {IResponse} res
+   * @returns {Promise< IResponse >} 
+   * @memberof BaseRouter
+   */
+  public respond ( t: Promise< any >, res: IResponse ): Promise< IResponse > {
     return t
       .then( ( u ) => res.json( u ) )
-      .catch( ( err: APIError ) => res.status( err.statusCode >= 100 && err.statusCode < 600 ? err.statusCode : 500 ).json( { error: err.error, objectResponse: err.objectResponse } ) )
-  }
-}
-
-export class PersistRouter< M, C extends IDAOController< M > > extends BaseRouter {
-  controller: C
-  router: Router
-
-  constructor ( store: JSData.DataStore, controller: C ) {
-    super()
-    this.controller = controller
-    this.router = Router()
-    this.routers()
-  }
-
-  public routers () {
-    /* GET lista todos os registros da classe corrente em controller. */
-    this.router.get( '/', ( req, res, next ) => this.respond( this.controller.findAll( req, res, next ), res ) )
-
-    /* GET busca o registro com o id. */
-    this.router.get( '/:id', ( req, res, next ) => this.respond( this.controller.find( req, res, next ), res ) )
-
-    /* POST cria um novo registro da classe corrente em controller. */
-    this.router.post( '/', ( req, res, next ) => this.respond( this.controller.create( req, res, next ), res ) )
-
-    /* PUT atualiza o registro. */
-    this.router.put( '/:id', ( req, res, next ) => this.respond( this.controller.update( req, res, next ), res ) )
-
-    /* DELETE deleta o registro com o id. */
-    this.router.delete( '/:id', ( req, res, next ) => this.respond( this.controller.delete( req, res, next ), res ) )
-
-    /* POST lista paginada com os registros da classe corrente em controller. */
-    this.router.post( '/query', ( req, res, next ) => this.respond( this.controller.query( req, res, next ), res ) )
-  }
-
-  public getRouter (): Router {
-    return this.router
+      .catch( ( err: APIError ) => {
+        console.log( err.stack )
+        return res.status( err.statusCode >= 100 && err.statusCode < 600 ? err.statusCode : 500 ).json( { error: err.error, objectResponse: err.objectResponse } )
+      } )
   }
 }

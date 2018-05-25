@@ -1,10 +1,17 @@
 import { UserController } from '../controllers'
-import { PersistRouter } from './base-router'
+import { DAORouter } from './dao-router'
 import { AppConfig } from '../config'
 import { IUser } from '../interfaces'
 import * as JSData from 'js-data'
 
-export class UserRouter extends PersistRouter< IUser, UserController > {
+/**
+ * Classe de roteamento para os objeto usuários.
+ * 
+ * @export
+ * @class UserRouter
+ * @extends {DAORouter<IUser, UserController>}
+ */
+export class UserRouter extends DAORouter< IUser, UserController > {
   constructor ( store: JSData.DataStore, appConfig: AppConfig ) {
     super( store, new UserController( store, appConfig ) )
   }
