@@ -9,6 +9,8 @@ import * as logger from 'morgan'
 /**
  * Passport
  */
+import { IDefaultAdapterOptions } from './interfaces'
+import { MongoDBAdapter } from 'js-data-mongodb'
 import * as Services from './services'
 import * as Config from './config'
 import * as Auth from './auth'
@@ -75,7 +77,10 @@ export class Application {
      * Definindo o adaptador JSData para o projeto
      */
     const store: JSData.DataStore = new JSData.DataStore()
-    store.registerAdapter( this.appConfig.dbConfig.getDatabase(), this.appConfig.dbConfig.getAdapter(), this.appConfig.dbConfig.getAdapterOptions() )
+    const database: string = this.appConfig.dbConfig.getDatabase()
+    const adapter: MongoDBAdapter = this.appConfig.dbConfig.getAdapter()
+    const adapterOptions: IDefaultAdapterOptions = this.appConfig.dbConfig.getAdapterOptions()
+    store.registerAdapter( database, adapter, adapterOptions )
     return store
   }
 

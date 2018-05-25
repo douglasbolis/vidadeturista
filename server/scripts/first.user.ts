@@ -13,11 +13,7 @@ import * as JSData from 'js-data'
 
 const store: JSData.DataStore = new JSData.DataStore()
 const appConfig = new AppConfig()
-store.registerAdapter(
-  appConfig.dbConfig.getDatabase(),
-  appConfig.dbConfig.getAdapter(),
-  appConfig.dbConfig.getAdapterOptions()
-)
+store.registerAdapter( appConfig.dbConfig.getDatabase(), appConfig.dbConfig.getAdapter(), appConfig.dbConfig.getAdapterOptions() )
 
 class Firstuser {
   private userDAO: UserDAO

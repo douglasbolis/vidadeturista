@@ -3,6 +3,7 @@
  */
 import * as dotenv from 'dotenv'
 dotenv.config()
+
 import { Application } from './application'
 import { AppConfig } from './config'
 import * as cookieParser from 'cookie-parser'

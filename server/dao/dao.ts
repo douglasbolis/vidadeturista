@@ -14,11 +14,12 @@ import * as _ from 'lodash'
  */
 export class DAO< T > implements IDAO< T > {
   collection: JSData.Mapper
-  schema: JSData.Schema
+  store: JSData.DataStore
   collectionName: string
+  schema: JSData.Schema
   appConfig: AppConfig
   opts: any
-  constructor ( store: JSData.DataStore, appConfig: AppConfig, collectionName: string, schema: any = null, relations: any = null, joins: string[] = [] ) {
+  constructor ( store: JSData.DataStore, appConfig: AppConfig, collectionName: string, schema: any = null, relations: any = null, joins: Array< string > = [] ) {
     if ( !store ) {
       throw Error( 'store is not defined' )
     }
@@ -60,7 +61,7 @@ export class DAO< T > implements IDAO< T > {
 
     // Pegando/Instanciando a collection.
     try {
-      this.collection = store.getMapper( collectionName )
+      this.collection = store.getMapper( this.collectionName )
     } catch ( e ) {
       const opts: any = {}
       if ( schema ) {
@@ -69,7 +70,9 @@ export class DAO< T > implements IDAO< T > {
       if ( relations ) {
         opts.relations = relations
       }
-      this.collection = store.defineMapper( collectionName, { ...opts, ...{ collection: collectionName } } )
+      this.collection = store.defineMapper( this.collectionName, { ...opts, ...{ collection: this.collectionName } } )
+    } finally {
+      this.store = store
     }
 
     this.opts = {
@@ -101,7 +104,7 @@ export class DAO< T > implements IDAO< T > {
    */
   public findAll ( query: Object = {}, authUser: IUser ): Promise< Array< T > > {
     const filterActive: any = { where: { active: true } }
-    return this.collection.findAll( { ...query, ...filterActive }, this.opts )
+    return this.store.findAll( this.collectionName, { ...query, ...filterActive }, this.opts )
       .then( ( records: Array< JSData.Record > ) => records.map( d => d.toJSON( this.opts ) ) as Array< T > )
   }
 
