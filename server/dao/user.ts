@@ -106,12 +106,7 @@ export class UserDAO extends DAO< IUser > {
    */
   public findAll ( query: Object = {}, authUser: IUser ): Promise< Array< IUser > > {
     return super.findAll( query, authUser )
-      .then( ( users: Array< IUser > ) => {
-        if ( authUser.type !== ETypeUser.ADMIN ) {
-          _.remove( users, user => user.type !== ETypeUser.DEFAULT )
-        }
-        return users
-      } )
+      .then( ( users: Array< IUser > ) => authUser.type !== ETypeUser.ADMIN ? _.filter( users, user => user.type === ETypeUser.DEFAULT ) : users )
   }
 
   /**

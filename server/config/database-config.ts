@@ -1,4 +1,4 @@
-import { IBaseMongoDBAdapter, MongoDBAdapter } from 'js-data-mongodb'
+import { IBaseRethinkDBAdapter, RethinkDBAdapter } from 'js-data-rethinkdb'
 import { IDefaultAdapterOptions } from '../interfaces'
 import { getEnv } from './utils'
 
@@ -10,21 +10,21 @@ import { getEnv } from './utils'
  */
 export class DatabaseConfig {
   private _adapterOptions: IDefaultAdapterOptions
-  private _adapter: MongoDBAdapter
+  private _adapter: RethinkDBAdapter
   private _database: string
   public constructor () {
     // Definindo conexão com o banco de dados.
-    let port: string = getEnv( 'SERVER_MONGODB_PORT' ) || '27017'
-    let host: string = getEnv( 'SERVER_MONGODB_HOST' ) || 'localhost'
-    let db: string = getEnv( 'SERVER_MONGODB_DB' ) || 'vidadeturista'
-    let opts: IBaseMongoDBAdapter = {
-      uri: `mongodb://${ host }:${ port }/${ db }`
-    } 
+    let opts: IBaseRethinkDBAdapter = {
+      rOpts: {
+        host: getEnv( 'SERVER_RETHINKDB_HOST' ) || 'localhost',
+        port: getEnv( 'SERVER_RETHINKDB_PORT' ) || 28015,
+        db: getEnv( 'SERVER_RETHINKDB_DB' ) || 'vidadeturista'
+      }
+    }
 
-    // Configuração do banco de dados.
     this._adapterOptions = { default: true }
-    this._database = 'mongodb'
-    this._adapter = new MongoDBAdapter( opts )
+    this._database = 'rethinkdb'
+    this._adapter = new RethinkDBAdapter( opts )
   }
 
   public getAdapterOptions () {

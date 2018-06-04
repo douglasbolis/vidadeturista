@@ -14,7 +14,6 @@ import * as _ from 'lodash'
  */
 export class DAO< T > implements IDAO< T > {
   collection: JSData.Mapper
-  store: JSData.DataStore
   collectionName: string
   schema: JSData.Schema
   appConfig: AppConfig
@@ -71,8 +70,6 @@ export class DAO< T > implements IDAO< T > {
         opts.relations = relations
       }
       this.collection = store.defineMapper( this.collectionName, { ...opts, ...{ collection: this.collectionName } } )
-    } finally {
-      this.store = store
     }
 
     this.opts = {
@@ -103,7 +100,7 @@ export class DAO< T > implements IDAO< T > {
    */
   public findAll ( query: Object = {}, authUser: IUser ): Promise< Array< T > > {
     const filterActive: any = { where: { active: true } }
-    return this.store.findAll( this.collectionName, { ...query, ...filterActive }, this.opts )
+    return this.collection.findAll( { ...query, ...filterActive }, this.opts )
       .then( ( records: Array< JSData.Record > ) => records.map( d => d.toJSON( this.opts ) ) as Array< T > )
   }
 
@@ -151,7 +148,7 @@ export class DAO< T > implements IDAO< T > {
    * @memberof DAO
    */
   public update ( id: string, authUser: IUser, obj: T ): Promise< T > {
-    return this.collection.update( id, obj )
+    return this.collection.update( id, this.fieldsUpValidator( obj, [ 'active' ] ) )
       .then( ( record: JSData.Record ) => record.toJSON( this.opts ) as T )
       .catch( ( reject: JSData.SchemaValidationError ) => {
         throw new APIError( 'Erro de entrada dos dados.', 400, reject )
@@ -241,5 +238,4 @@ export class DAO< T > implements IDAO< T > {
 
     return newObj
   }
-
 }

@@ -14,7 +14,9 @@ export const passportJwt = ( store: JSData.DataStore, passport: any, appConfig: 
 
   passport.use( new Strategy( params, ( token: any, done: Function ) => {
     store.find( appConfig.getUsersTable(), token.userId )
-      .then( ( user: IUser ) => {
+      .then( ( record: JSData.Record ) => {
+        const user: IUser = record.toJSON()
+
         if ( _.isEmpty( user ) ) {
           return ServiceLib.callMessageError( 'Usuário não encontrado.', 404 )
         } else
@@ -47,7 +49,7 @@ export const jwtGenerator = ( store: JSData.DataStore, appConfig: AppConfig ): F
   const messageDefault: string = 'Email e/ou senha incorretos.'
 
   if ( _.isEmpty( email ) || _.isEmpty( password ) ) {
-    return ServiceLib.callMessageError( 'Campos inválidos.', 403 )
+    return ServiceLib.callMessageError( messageDefault, 403 )
   }
 
   return store.findAll( appConfig.getUsersTable(), filterMail )
@@ -65,7 +67,7 @@ export const jwtGenerator = ( store: JSData.DataStore, appConfig: AppConfig ): F
         return ServiceLib.callMessageError( messageDefault, 403 )
       } else
       if ( !user.active ) {
-        return ServiceLib.callMessageError( 'A conta foi desativada.', 401 )
+        return ServiceLib.callMessageError( 'A conta do usuário foi encerrada.', 401 )
       }
 
       const days: string = appConfig.getExpirationDays() ? appConfig.getExpirationDays().toString( 10 ) : '3'

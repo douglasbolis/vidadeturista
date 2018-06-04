@@ -12,7 +12,7 @@ export interface IRethinkDBConfig {
    * @memberof IRethinkDBConfig
    */
   host: string,
-  
+
   /**
    * Número da porta do banco de dados.
    * 
@@ -20,7 +20,7 @@ export interface IRethinkDBConfig {
    * @memberof IRethinkDBConfig
    */
   port: number,
-  
+
   /**
    * Nome do banco de dados.
    * 
