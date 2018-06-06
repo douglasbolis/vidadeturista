@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 import { IRequest, IResponse, INextFunction } from './interfaces'
+import { PassportJwtLocal } from './auth'
 import { AppConfig } from './config'
 import * as cookieParser from 'cookie-parser'
 import * as bodyParser from 'body-parser'
@@ -15,7 +16,6 @@ import * as express from 'express'
 import * as routes from './routes'
 import * as JSData from 'js-data'
 import * as logger from 'morgan'
-import * as Auth from './auth'
 
 /**
  * Class principal da aplicação.
@@ -127,7 +127,7 @@ export class MainApp {
    */
   private handlePassport (): void {
     // required for passport
-    this.passport = Auth.passportJwt( this.store, this.passport, this.appConfig )
+    this.passport = PassportJwtLocal.passportJwt( this.store, this.passport, this.appConfig )
     this.app.use( this.passport.initialize() )
   }
 

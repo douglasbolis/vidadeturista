@@ -12,7 +12,7 @@ import * as _ from 'lodash'
  * @implements {IDAO<T>}
  * @template T Tipo generalizado.
  */
-export class DAO< T > implements IDAO< T > {
+export abstract class DAO< T > implements IDAO< T > {
   collection: JSData.Mapper
   collectionName: string
   schema: JSData.Schema
@@ -86,9 +86,7 @@ export class DAO< T > implements IDAO< T > {
    *
    * @memberOf DAO
    */
-  public parseModel ( obj: T ): T {
-    throw new Error( 'not implemented' )
-  }
+  abstract parseModel ( obj: T ): T
 
   /**
    * Busca todos os registros.

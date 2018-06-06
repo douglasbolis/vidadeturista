@@ -5,7 +5,7 @@ import { IUser } from '../interfaces'
 import * as JSData from 'js-data'
 
 /**
- * Classe de roteamento para os objeto usuários.
+ * Classe de roteamento para os usuários.
  * 
  * @export
  * @class UserRouter
