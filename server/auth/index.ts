@@ -1,2 +1,2 @@
-export { authenticate } from './jwtAuth'
-export { jwtGenerator, passportJwt } from './passport'
+export * from './jwtAuth'
+export * from './passport'

@@ -30,7 +30,7 @@ export class SendMail {
   }
 
   public sendForgotEmail ( name: string, email: string, url: string ): Promise< any > {
-    return this.generateHtml( name, email, url, ETypeMail.forgot )
+    return this.generateHtml( name, email, url, ETypeMail.FORGOT )
       .then( ( html: string ) => {
         return this.sendMail( email, 'Recuperação de senha', html )
       } )
@@ -40,7 +40,7 @@ export class SendMail {
   }
 
   public sendConfirmationEmail ( email: string, url: string ): Promise< any > {
-    return this.generateHtml( '', email, url, ETypeMail.confirmation )
+    return this.generateHtml( '', email, url, ETypeMail.CONFIRMATION )
     .then( ( html: string ) => {
       return this.sendMail( email, 'Confirmação de Cadastro', html )
     } )
@@ -65,7 +65,7 @@ export class SendMail {
 
   private generateHtml ( name: string, email: string, url: string, type: ETypeMail ): Promise< string > {
     const chooseTemplate = ( _type: ETypeMail ) => {
-      if ( _type === ETypeMail.confirmation ) {
+      if ( _type === ETypeMail.CONFIRMATION ) {
         return path.join( this.mailConfig.getLayoutPath(), `confirmation.hbs` )
       } else {
         return path.join( this.mailConfig.getLayoutPath(), `forgot.hbs` )
