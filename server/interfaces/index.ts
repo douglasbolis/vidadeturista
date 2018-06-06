@@ -1,4 +1,5 @@
 export * from './iaddress'
+export * from './ibase-model'
 export * from './ibase-user'
 export * from './idao'
 export * from './idao-controller'

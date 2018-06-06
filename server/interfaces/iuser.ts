@@ -129,9 +129,9 @@ export enum ETypeMail {
   /**
    * Signup.
    */
-  confirmation,
+  CONFIRMATION,
   /**
    * Esqueceu senha.
    */
-  forgot
+  FORGOT
 }
