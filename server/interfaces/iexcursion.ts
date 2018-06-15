@@ -5,7 +5,7 @@ import { IAddress, IBaseModel, IVehicle } from '.'
  *
  * @export
  * @interface IExcursion
- * @extends {IAddress}
+ * @extends {IBaseModel}
  */
 export interface IExcursion extends IBaseModel {
   /**
@@ -36,21 +36,21 @@ export interface IExcursion extends IBaseModel {
   date: string
 
   /**
-   * Id do veículo da excursão.
+   * Id dos veículos da excursão.
    * TODO verificar possibilidade de ser mais de um veículo.
    *
-   * @type {string}
+   * @type {Array< string >}
    * @memberof IExcursion
    */
-  vehicleId: string
+  vehiclesId: Array< string >
 
   /**
-   * Dados do veículo da excursão.
+   * Dados dos veículos da excursão.
    *
-   * @type {IVehicle}
+   * @type {Array< IVehicle >}
    * @memberof IExcursion
    */
-  vehicle?: IVehicle
+  vehicles?: Array< IVehicle >
 
   /**
    * Valor das passagens.
@@ -59,4 +59,44 @@ export interface IExcursion extends IBaseModel {
    * @memberof IExcursion
    */
   value: number
+
+  /**
+   * Valor gasto com combustível.
+   *
+   * @type {number}
+   * @memberof IExcursion
+   */
+  fuel: number
+
+  /**
+   * A excursão terá lanche durante a viagem(percurso)?
+   *
+   * @type {boolean}
+   * @memberof IExcursion
+   */
+  snack: boolean
+
+  /**
+   * A excursão terá café-da-manhã no hotel?
+   *
+   * @type {boolean}
+   * @memberof IExcursion
+   */
+  breakfast: boolean
+
+  /**
+   * A excursão terá almoço no hotel?
+   *
+   * @type {boolean}
+   * @memberof IExcursion
+   */
+  lunch: boolean
+
+  /**
+   * A excursão terá jantar no hotel?
+   *
+   * @type {boolean}
+   * @memberof IExcursion
+   */
+  dinner: boolean
 }
