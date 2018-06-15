@@ -4,10 +4,11 @@
   "description": "Projeto de sistema de excursões.",
   "main": "app.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "gulp",
     "start": "node server/bin/www",
     "commitmsg": "validate-commit-msg",
-    "gulp": "gulp"
+    "gulp": "gulp",
+    "yarn": "yarn"
   },
   "repository": {
     "type": "git",
@@ -17,7 +18,7 @@
     "node",
     "express",
     "typescript",
-    "mongodb"
+    "rethinkdb"
   ],
   "author": "douglasbolislima@gmail.com",
   "license": "ISC",
